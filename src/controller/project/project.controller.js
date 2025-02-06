@@ -23,7 +23,9 @@ const createProject = catchAsyncError(async (req, res, next) => {
         return next(new ErrorHandler('Invalid status.', 400))
     }
 
-    let payload = {name, description};
+    const userId = req.user.id;
+
+    let payload = {name, description, userId};
     if(status) payload = {...payload, status};
 
     const project = await ProjectServices.create(payload);
@@ -42,9 +44,13 @@ const updateProject = catchAsyncError(async (req, res, next) => {
         return next(new ErrorHandler('Missing required fields', 400))
     }
 
-    const isValid = await ProjectServices.getById(id);
-    if (!isValid) {
+    const projectData = await ProjectServices.getById(id);
+    if (!projectData) {
         return next(new ErrorHandler("Invalid ID provided", 400))
+    }
+
+    if(projectData.userId !== req.user.id){
+        return next(new ErrorHandler("You are not have the access of the project", 403))
     }
 
     const validStatus = ['PLANNED', 'ONGOING', 'COMPLETED']
@@ -68,12 +74,15 @@ const updateProject = catchAsyncError(async (req, res, next) => {
 const deleteProject = catchAsyncError(async (req, res, next) => {
     const {id} = req.params;
 
-    const isValid = await ProjectServices.getById(id);
-    if (!isValid) {
+    const projectData = await ProjectServices.getById(id);
+    if (!projectData) {
         return next(new ErrorHandler("Invalid ID provided or already deleted", 400))
     }
+    if(projectData.userId !== req.user.id){
+        return next(new ErrorHandler("You are not have the access of the project", 403))
+    }
 
-    await ProjectServices.softDeleteById(id);
+    await ProjectServices.deleteById(id);
 
     res.status(200).json({
         success: true,

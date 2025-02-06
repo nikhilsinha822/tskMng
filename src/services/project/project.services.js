@@ -1,11 +1,11 @@
 const prisma = require("../../db/prisma")
 
 const getAll = async () => {
-    return prisma.project.findMany({ where: { deletedAt: null } });
+    return prisma.project.findMany();
 }
 
 const getById = async (id) => {
-    return prisma.project.findFirst({ where: { id, deletedAt: null } })
+    return prisma.project.findFirst({ where: { id } })
 }
 
 const create = async (payload) => {
@@ -13,18 +13,10 @@ const create = async (payload) => {
 }
 
 const updateById = async (id, payload) => {
-    return prisma.project.update({ where: { id, deletedAt: null }, data: payload });
+    return prisma.project.update({ where: { id }, data: payload });
 }
 
-const softDeleteById = async (id) => {
-    return prisma.project.update({
-        where: { id, deletedAt: null }, data: {
-            deletedAt: new Date()
-        }
-    })
-}
-
-const hardDeleteById = async (id) => {
+const deleteById = async (id) => {
     return prisma.project.delete({ where: { id } });
 }
 
@@ -33,6 +25,5 @@ module.exports = {
     getById,
     create,
     updateById,
-    softDeleteById,
-    hardDeleteById
+    deleteById,
 }

@@ -1,7 +1,7 @@
 const { ErrorHandler } = require("../../utils/errorHandler.util");
 const { catchAsyncError } = require("../../middleware/catchAsyncError");
 const UserServices = require('../../services/user/user.services')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const getUsers = catchAsyncError(async (req, res, next) => {
@@ -59,8 +59,12 @@ const updateUser = catchAsyncError(async (req, res, next) => {
         return next(new ErrorHandler("Missing required fields", 400))
     }
 
-    const isValid = await UserServices.getById(id);
-    if (!isValid) {
+    if(req.user.id !== id){
+        return next(new ErrorHandler('You can only update your data', 401))
+    }
+
+    const userData = await UserServices.getById(id);
+    if (!userData) {
         return next(new ErrorHandler("Invalid ID provided", 400))
     }
 
@@ -85,12 +89,16 @@ const updateUser = catchAsyncError(async (req, res, next) => {
 const deleteUser = catchAsyncError(async (req, res, next) => {
     const { id } = req.params;
 
+    if(req.user.id !== id){
+        return next(new ErrorHandler('You can only update your data', 401))
+    }
+
     const isValid = await UserServices.getById(id);
     if (!isValid) {
         return next(new ErrorHandler("Invalid ID provided", 400))
     }
 
-    await UserServices.softDeleteById(id);
+    await UserServices.deleteById(id);
 
     res.status(200).json({
         success: true,

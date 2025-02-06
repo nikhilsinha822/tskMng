@@ -21,7 +21,6 @@ model User {
   createdAt DateTime  @default(now())
   projects  Project[]
   tasks     Task[]
-  deletedAt DateTime?
 }
 
 enum ProjectStatus {
@@ -37,9 +36,8 @@ model Project {
   status      ProjectStatus
   createdAt   DateTime      @default(now())
   userId      String?
-  user        User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User?         @relation(fields: [userId], references: [id])
   tasks       Task[]
-  deletedAt   DateTime?
 }
 
 enum TaskStatus {
@@ -57,6 +55,5 @@ model Task {
   project        Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdAt      DateTime   @default(now())
   assignedUserId String?
-  user           User?      @relation(fields: [assignedUserId], references: [id], onDelete: Cascade)
-  deletedAt      DateTime?
+  user           User?      @relation(fields: [assignedUserId], references: [id])
 }

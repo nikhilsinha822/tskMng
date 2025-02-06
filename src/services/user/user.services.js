@@ -1,28 +1,27 @@
 const prisma = require("../../db/prisma")
 
 const getAll = async () => {
-    return prisma.user.findMany({ where: { deletedAt: null } });
+    return prisma.user.findMany();
 }
 
 const getById = async (id) => {
-    return prisma.user.findFirst({ where: { id, deletedAt: null } })
+    return prisma.user.findFirst({ where: { id } })
 }
 
 const getByEmail = async (email) => {
-    return prisma.user.findFirst({ where: { email, deletedAt: null } });
+    return prisma.user.findFirst({ where: { email } });
 }
 
 const create = async (payload) => {
     const user = await prisma.user.findUnique({
-        where: { email: payload.email, deletedAt: null }
+        where: { email: payload.email }
     });
 
     if (user && user.deletedAt) {
         return prisma.user.update({
             where: { id: user.id }, data: {
                 name: payload.name,
-                email: payload.email,
-                deletedAt: null
+                email: payload.email
             }
         })
     }
@@ -41,19 +40,11 @@ const create = async (payload) => {
 }
 
 const updateById = async (id, payload) => {
-    return prisma.user.update({ where: { id, deletedAt: null }, data: payload });
+    return prisma.user.update({ where: { id }, data: payload });
 }
 
-const softDeleteById = async (id) => {
-    return prisma.user.update({
-        where: { id, deletedAt: null }, data: {
-            deletedAt: new Date()
-        }
-    })
-}
-
-const hardDeleteById = async (id) => {
-    return prisma.user.delete({ where: { id, deletedAt: null } });
+const deleteById = async (id) => {
+    return prisma.user.delete({ where: { id } });
 }
 
 module.exports = {
@@ -62,6 +53,5 @@ module.exports = {
     getById,
     create,
     updateById,
-    softDeleteById,
-    hardDeleteById
+    deleteById,
 }

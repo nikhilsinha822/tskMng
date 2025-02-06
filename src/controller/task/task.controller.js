@@ -14,7 +14,7 @@ const getAllProjectTask = catchAsyncError(async (req, res, next) => {
 })
 
 const getAllTaskByFilter = catchAsyncError(async (req, res, next) => {
-    const {assignedUserId, status} = req.query;
+    const { assignedUserId, status } = req.query;
 
     const validStatus = ['TODO', 'IN_PROGRESS', 'DONE']
     if (status && !validStatus.includes(status)) {
@@ -22,9 +22,8 @@ const getAllTaskByFilter = catchAsyncError(async (req, res, next) => {
     }
 
     let filter = {};
-    if(assignedUserId) filter = {...filter, assignedUserId}
-    if(status) filter = {...filter, status}
-    console.log(filter)
+    if (assignedUserId) filter = { ...filter, assignedUserId }
+    if (status) filter = { ...filter, status }
 
     const tasks = await TaskServices.getAllByFilter(filter);
 
@@ -37,6 +36,7 @@ const getAllTaskByFilter = catchAsyncError(async (req, res, next) => {
 const createProjectTask = catchAsyncError(async (req, res, next) => {
     const { title, description, status, userId } = req.body;
     const { projectId } = req.params;
+    const assignedUserId = req.user.id;
 
     if (!title || !description) {
         return next(new ErrorHandler('Missing required fields', 400))
@@ -52,7 +52,7 @@ const createProjectTask = catchAsyncError(async (req, res, next) => {
         return next(new ErrorHandler('Invalid project ID provided', 400))
     }
 
-    const payload = { title, description, projectId, status };
+    const payload = { title, description, projectId, status, assignedUserId };
     if (userId) payload = { ...payload, userId }
     const Task = await TaskServices.create(payload);
 
@@ -85,6 +85,9 @@ const updateTask = catchAsyncError(async (req, res, next) => {
     if (assignedUserId) payload = { ...payload, assignedUserId };
 
     const Task = await TaskServices.updateById(taskId, payload);
+    if(Task.assignedUserId !== req.user.id){
+        return next(new ErrorHandler("You are not have the access of the task", 403))
+    }
 
     return res.status(200).json({
         success: true,
@@ -95,12 +98,15 @@ const updateTask = catchAsyncError(async (req, res, next) => {
 const deleteTask = catchAsyncError(async (req, res, next) => {
     const { id } = req.params;
 
-    const isValid = await TaskServices.getById(id);
-    if (!isValid) {
+    const Task = await TaskServices.getById(id);
+    if (!Task) {
         return next(new ErrorHandler("Invalid ID provided or already deleted", 400))
     }
+    if(Task.assignedUserId !== req.user.id){
+        return next(new ErrorHandler("You are not have the access of the task", 403))
+    }
 
-    await TaskServices.softDeleteById(id);
+    await TaskServices.deleteById(id);
 
     res.status(200).json({
         success: true,
