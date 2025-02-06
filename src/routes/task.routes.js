@@ -4,7 +4,10 @@ const {
     deleteTask,
     getAllTaskByFilter
 } = require('../controller/task/task.controller');
+const verifyJWT = require('../middleware/verifyJWT');
 const router = express.Router();
+
+router.use(verifyJWT)
 
 router.route('/')
     .get(getAllTaskByFilter)

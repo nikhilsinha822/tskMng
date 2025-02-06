@@ -6,7 +6,10 @@ const {
     deleteProject
 } = require('../controller/project/project.controller');
 const { getAllProjectTask, createProjectTask } = require('../controller/task/task.controller');
+const verifyJWT = require('../middleware/verifyJWT');
 const router = express.Router();
+
+router.use(verifyJWT);
 
 router.route('/')
     .get(getAllProject)

@@ -7,9 +7,11 @@ const jwt = require('jsonwebtoken');
 const getUsers = catchAsyncError(async (req, res, next) => {
     const user = await UserServices.getAll();
 
+    const safeUser = user.map(({password, ...rest}) => rest);
+
     return res.status(200).json({
         success: true,
-        data: user
+        data: safeUser
     })
 })
 
@@ -35,6 +37,8 @@ const createUser = catchAsyncError(async (req, res, next) => {
         expiresIn: 60 * 60 * 24 * 7
     })
 
+    const { password: _, ...safeUser } = user;
+
     res.cookie('jwt', accessToken, {
         httpOnly: true,
         secure: true,
@@ -44,10 +48,9 @@ const createUser = catchAsyncError(async (req, res, next) => {
 
     return res.status(200).json({
         success: true,
-        data: user
+        data: safeUser
     })
 })
-
 
 const updateUser = catchAsyncError(async (req, res, next) => {
     const { name, email } = req.body;
@@ -71,9 +74,11 @@ const updateUser = catchAsyncError(async (req, res, next) => {
     if (name) payload = { ...payload, name };
     const user = await UserServices.updateById(id, payload);
 
+    const { password: _, ...safeUser } = user;
+
     return res.status(200).json({
         success: true,
-        data: user
+        data: safeUser
     })
 })
 
