@@ -1,6 +1,8 @@
 const { ErrorHandler } = require("../../utils/errorHandler.util");
 const { catchAsyncError } = require("../../middleware/catchAsyncError");
 const UserServices = require('../../services/user/user.services')
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken');
 
 const getUsers = catchAsyncError(async (req, res, next) => {
     const user = await UserServices.getAll();
@@ -12,8 +14,8 @@ const getUsers = catchAsyncError(async (req, res, next) => {
 })
 
 const createUser = catchAsyncError(async (req, res, next) => {
-    const { name, email } = req.body;
-    if (!name || !email) {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
         return next(new ErrorHandler("Missing required fields", 400))
     }
 
@@ -22,8 +24,23 @@ const createUser = catchAsyncError(async (req, res, next) => {
         return next(new ErrorHandler("Email already in use", 400))
     }
 
-    const payload = { email, name };
+    const hshPass = await bcrypt.hash(password, 10);
+    const payload = { email, name, password: hshPass };
     const user = await UserServices.create(payload);
+
+    const accessToken = jwt.sign({
+        id: user.id,
+        email: email
+    }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: 60 * 60 * 24 * 7
+    })
+
+    res.cookie('jwt', accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     return res.status(200).json({
         success: true,
@@ -37,7 +54,7 @@ const updateUser = catchAsyncError(async (req, res, next) => {
     const { id } = req.params;
     if (!name && !email) {
         return next(new ErrorHandler("Missing required fields", 400))
-    } 
+    }
 
     const isValid = await UserServices.getById(id);
     if (!isValid) {
