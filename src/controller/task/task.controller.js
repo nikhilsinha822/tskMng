@@ -13,6 +13,27 @@ const getAllProjectTask = catchAsyncError(async (req, res, next) => {
     })
 })
 
+const getAllTaskByFilter = catchAsyncError(async (req, res, next) => {
+    const {assignedUserId, status} = req.query;
+
+    const validStatus = ['TODO', 'IN_PROGRESS', 'DONE']
+    if (status && !validStatus.includes(status)) {
+        return next(new ErrorHandler('Invalid status.', 400))
+    }
+
+    let filter = {};
+    if(assignedUserId) filter = {...filter, assignedUserId}
+    if(status) filter = {...filter, status}
+    console.log(filter)
+
+    const tasks = await TaskServices.getAllByFilter(filter);
+
+    return res.status(200).json({
+        success: true,
+        data: tasks
+    })
+})
+
 const createProjectTask = catchAsyncError(async (req, res, next) => {
     const { title, description, status, userId } = req.body;
     const { projectId } = req.params;
@@ -90,6 +111,7 @@ const deleteTask = catchAsyncError(async (req, res, next) => {
 module.exports = {
     getAllProjectTask,
     createProjectTask,
+    getAllTaskByFilter,
     updateTask,
     deleteTask
 }

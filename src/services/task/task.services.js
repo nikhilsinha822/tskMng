@@ -4,6 +4,10 @@ const getAllByProject = async (projectId) => {
     return prisma.task.findMany({ where: { projectId, deletedAt: null } })
 }
 
+const getAllByFilter = async (filter) => {
+    return prisma.task.findMany({ where: { ...filter, deletedAt: null } })
+}
+
 const getById = async (id) => {
     return prisma.task.findFirst({ where: { id, deletedAt: null } })
 }
@@ -31,6 +35,7 @@ const hardDeleteById = async (id) => {
 module.exports = {
     getAllByProject,
     getById,
+    getAllByFilter,
     create,
     updateById,
     softDeleteById,
