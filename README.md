@@ -1,5 +1,10 @@
 # App Setup
 
+## Testing Demonstration
+A short screen recording demonstrating the testing process of the endpoints is available below:
+
+[![Watch Demo](https://img.shields.io/badge/Watch-Demo-blue)](https://youtu.be/khtEOLPmXWI)
+
 ## Prerequisites
 
 Ensure you have the following installed on your system:
