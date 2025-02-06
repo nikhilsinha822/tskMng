@@ -4,7 +4,7 @@ const verifyJWT = require('../middleware/verifyJWT');
 const router = express.Router();
 
 router.route('/')
-    .get(getUsers)
+    .get(verifyJWT, getUsers)
     .post(createUser)
 
 router.use(verifyJWT)

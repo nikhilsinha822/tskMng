@@ -100,6 +100,8 @@ const deleteUser = catchAsyncError(async (req, res, next) => {
 
     await UserServices.deleteById(id);
 
+    res.clearCookie('jwt')
+
     res.status(200).json({
         success: true,
         message: "Successfully deleted user"

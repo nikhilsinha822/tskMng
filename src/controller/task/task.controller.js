@@ -34,7 +34,7 @@ const getAllTaskByFilter = catchAsyncError(async (req, res, next) => {
 })
 
 const createProjectTask = catchAsyncError(async (req, res, next) => {
-    const { title, description, status, userId } = req.body;
+    const { title, description, status } = req.body;
     const { projectId } = req.params;
     const assignedUserId = req.user.id;
 
@@ -47,13 +47,15 @@ const createProjectTask = catchAsyncError(async (req, res, next) => {
         return next(new ErrorHandler('Invalid status.', 400))
     }
 
-    const validProject = await ProjectServices.getById(projectId);
-    if (!validProject) {
+    const projectData = await ProjectServices.getById(projectId);
+    if (!projectData) {
         return next(new ErrorHandler('Invalid project ID provided', 400))
+    }
+    if(projectData.userId !== req.user.id){
+        return next(new ErrorHandler('You donot have access of this project', 400));
     }
 
     const payload = { title, description, projectId, status, assignedUserId };
-    if (userId) payload = { ...payload, userId }
     const Task = await TaskServices.create(payload);
 
     return res.status(200).json({
@@ -75,23 +77,23 @@ const updateTask = catchAsyncError(async (req, res, next) => {
         return next(new ErrorHandler('Invalid status', 400))
     }
 
-    const validTask = await TaskServices.getById(taskId);
-    if (!taskId || !validTask) {
+    const task = await TaskServices.getById(taskId);
+    if (!taskId || !task) {
         return next(new ErrorHandler('Invalid Task ID', 400))
+    }
+    if(task.assignedUserId !== req.user.id){
+        return next(new ErrorHandler("You are not have the access of the task", 403))
     }
 
     let payload = {};
     if (status) payload = { ...payload, status };
     if (assignedUserId) payload = { ...payload, assignedUserId };
 
-    const Task = await TaskServices.updateById(taskId, payload);
-    if(Task.assignedUserId !== req.user.id){
-        return next(new ErrorHandler("You are not have the access of the task", 403))
-    }
+    const taskData = await TaskServices.updateById(taskId, payload);
 
     return res.status(200).json({
         success: true,
-        data: Task
+        data: taskData
     })
 })
 
