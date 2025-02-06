@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Task" ALTER COLUMN "projectId" DROP NOT NULL,
+ALTER COLUMN "assignedUserId" DROP NOT NULL;

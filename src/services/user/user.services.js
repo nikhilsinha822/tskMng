@@ -5,7 +5,7 @@ const getAll = async () => {
 }
 
 const getById = async (id) => {
-    return prisma.user.findUnique({ where: { id } })
+    return prisma.user.findFirst({ where: { id, deletedAt: null } })
 }
 
 const getByEmail = async (email) => {
@@ -41,19 +41,19 @@ const create = async (payload) => {
 }
 
 const updateById = async (id, payload) => {
-    return prisma.user.update({ where: { id }, data: payload });
+    return prisma.user.update({ where: { id, deletedAt: null }, data: payload });
 }
 
 const softDeleteById = async (id) => {
     return prisma.user.update({
-        where: { id }, data: {
+        where: { id, deletedAt: null }, data: {
             deletedAt: new Date()
         }
     })
 }
 
 const hardDeleteById = async (id) => {
-    return prisma.user.delete({ where: { id } });
+    return prisma.user.delete({ where: { id, deletedAt: null } });
 }
 
 module.exports = {
