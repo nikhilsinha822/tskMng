@@ -5,7 +5,7 @@ const getAll = async () => {
 }
 
 const getById = async (id) => {
-    return prisma.project.findFirst({ where: { id } })
+    return prisma.project.findFirst({ where: { id, deletedAt: null } })
 }
 
 const create = async (payload) => {
@@ -13,12 +13,12 @@ const create = async (payload) => {
 }
 
 const updateById = async (id, payload) => {
-    return prisma.project.update({ where: { id }, data: payload });
+    return prisma.project.update({ where: { id, deletedAt: null }, data: payload });
 }
 
 const softDeleteById = async (id) => {
     return prisma.project.update({
-        where: { id }, data: {
+        where: { id, deletedAt: null }, data: {
             deletedAt: new Date()
         }
     })

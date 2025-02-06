@@ -1,11 +1,11 @@
 const prisma = require("../../db/prisma")
 
 const getAllByProject = async (projectId) => {
-    return prisma.task.findMany({ where: {  projectId,  deletedAt: null} })
+    return prisma.task.findMany({ where: { projectId, deletedAt: null } })
 }
 
 const getById = async (id) => {
-    return prisma.task.findFirst({ where: { id } })
+    return prisma.task.findFirst({ where: { id, deletedAt: null } })
 }
 
 const create = async (payload) => {
@@ -13,7 +13,7 @@ const create = async (payload) => {
 }
 
 const updateById = async (id, payload) => {
-    return prisma.task.update({ where: { id }, data: payload });
+    return prisma.task.update({ where: { id, deletedAt: null }, data: payload });
 }
 
 const softDeleteById = async (id) => {

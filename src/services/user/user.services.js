@@ -14,7 +14,7 @@ const getByEmail = async (email) => {
 
 const create = async (payload) => {
     const user = await prisma.user.findUnique({
-        where: { email: payload.email }
+        where: { email: payload.email, deletedAt: null }
     });
 
     if (user && user.deletedAt) {

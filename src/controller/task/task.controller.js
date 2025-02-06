@@ -14,7 +14,7 @@ const getAllProjectTask = catchAsyncError(async (req, res, next) => {
 })
 
 const createProjectTask = catchAsyncError(async (req, res, next) => {
-    const { title, description, status } = req.body;
+    const { title, description, status, userId } = req.body;
     const { projectId } = req.params;
 
     if (!title || !description) {
@@ -32,7 +32,7 @@ const createProjectTask = catchAsyncError(async (req, res, next) => {
     }
 
     const payload = { title, description, projectId, status };
-
+    if (userId) payload = { ...payload, userId }
     const Task = await TaskServices.create(payload);
 
     return res.status(200).json({
@@ -42,10 +42,10 @@ const createProjectTask = catchAsyncError(async (req, res, next) => {
 })
 
 const updateTask = catchAsyncError(async (req, res, next) => {
-    const { title, description, status, projectId } = req.body;
+    const { status, userId: assignedUserId } = req.body;
     const { id: taskId } = req.params;
 
-    if (!title && !description && !status && !projectId) {
+    if (!status && !assignedUserId) {
         return next(new ErrorHandler('Missing required fields', 400))
     }
 
@@ -59,18 +59,9 @@ const updateTask = catchAsyncError(async (req, res, next) => {
         return next(new ErrorHandler('Invalid Task ID', 400))
     }
 
-    const validProject = await ProjectServices.getById(projectId);
-    if (projectId && !validProject) {
-        return next(new ErrorHandler('Invalid project ID provided', 400))
-    }
-
-    let payload = { title, description, projectId, status };
-    if (title) payload = { ...payload, title };
-    if (description) payload = { ...payload, description };
-    if (projectId) payload = { ...payload, projectId };
+    let payload = {};
     if (status) payload = { ...payload, status };
-
-    console.log(taskId, payload);
+    if (assignedUserId) payload = { ...payload, assignedUserId };
 
     const Task = await TaskServices.updateById(taskId, payload);
 
